@@ -1,0 +1,41 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Consensus</title>
+</head>
+<body>
+    <h1 id="room-name">{{ room_name }}</h1>
+    <input id="confusion-button" type="button" value="I'm confused.">
+
+    <script>
+        const roomName = document.getElementById('room-name').textContent;
+        const socket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/student/'
+            + roomName
+            + '/'
+        );
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data.message);
+        };
+
+        socket.onclose = function(e) {
+            console.error('Socket closed unexpectedly');
+        };
+
+        const CONFUSED = "I'm confused.";
+        const NOTCONFUSED = "I'm no longer confused.";
+        document.querySelector('#confusion-button').onclick = function(e) {
+            const message = document.querySelector("#confusion-button").value;
+            socket.send(JSON.stringify({"message":  message}));
+            document.querySelector("#confusion-button").value = (
+                message === CONFUSED ? NOTCONFUSED : CONFUSED
+            );
+        };
+    </script>
+</body>
+</html>
+

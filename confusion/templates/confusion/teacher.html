@@ -1,0 +1,41 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Consensus</title>
+</head>
+<body>
+    <h1 id="room-name">{{ room_name }}</h1>
+    <h2># of total students: <span id="total-students">0</span></h2>
+    <h2># of confused students: <span id="confused-students">0</span></h2>
+
+    <script>
+        const roomName = document.getElementById('room-name').textContent;
+        const socket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/teacher/'
+            + roomName
+            + '/'
+        );
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data);
+            if (data["confused_students"] !== undefined) {
+                const confused_students = data["confused_students"];
+                console.log(confused_students);
+                document.getElementById("confused-students").textContent = confused_students;
+            } else if (data["total_students"] !== undefined) {
+                const total_students = data["total_students"];
+                document.getElementById("total-students").textContent = total_students;
+            }
+        };
+
+        socket.onclose = function(e) {
+            console.error('Socket closed unexpectedly');
+        };
+
+    </script>
+</body>
+</html>
+
