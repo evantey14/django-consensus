@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 channels = "*"
 channels-redis = "*"
+uvicorn = "*"
 
 [requires]
 python_version = "3.8"
