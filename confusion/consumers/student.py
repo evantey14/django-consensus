@@ -33,6 +33,7 @@ class StudentConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(self.student_group, self.channel_name)
 
     def receive(self, text_data):
+        print(text_data)
         message = json.loads(text_data)['message']
         room = Room.objects.get(name=self.room_name)
         if message == CONFUSED:
