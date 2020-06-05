@@ -1,3 +1,3 @@
 Install `pipenv`, `docker`, and `docker-compose`.
 
-Run `docker-compose up`.
+Run `sudo docker-compose up`.
