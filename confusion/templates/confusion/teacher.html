@@ -21,10 +21,8 @@
 
         socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            console.log(data);
             if (data["confused_students"] !== undefined) {
                 const confused_students = data["confused_students"];
-                console.log(confused_students);
                 document.getElementById("confused-students").textContent = confused_students;
             } else if (data["total_students"] !== undefined) {
                 const total_students = data["total_students"];
