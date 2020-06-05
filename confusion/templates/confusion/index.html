@@ -3,25 +3,41 @@
 <head>
     <meta charset="utf-8"/>
     <title>Consensus</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
 </head>
 <body>
-    What room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
+    <center>
+    <h1>Enter new room name</h1>
+    <input id="room-name-input" type="text"><br>
+    <h2>Student link: <a id="student-link" href=""></a></h2>
+    <h2>Teacher link: <a id="teacher-link" href=""></a></h2>
+    </center>
 
     <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
+        const updateLinks = function(roomName) {
+            const studentLink = document.getElementById("student-link");
+            const teacherLink = document.getElementById("teacher-link");
+            if (roomName.length > 0) {
+                studentLink.href = "/student/" + roomName;
+                studentLink.innerText = window.location.host + "/student/" + roomName + "/";
+                teacherLink.href = "/teacher/" + roomName;
+                teacherLink.innerText = window.location.host + "/teacher/" + roomName + "/";
+            } else {
+                studentLink.href = "/";
+                studentLink.innerText = window.location.host + "/student/";
+                teacherLink.href = "/";
+                teacherLink.innerText = window.location.host + "/teacher/";
             }
-        };
+        }
 
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/student/' + roomName + '/';
+        const input = document.getElementById("room-name-input");
+        updateLinks(input.value);
+        input.focus();
+
+        input.onkeyup = function(e) {
+            const roomName = document.getElementById("room-name-input").value;
+            updateLinks(roomName);
         };
     </script>
 </body>
 </html>
-

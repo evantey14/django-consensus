@@ -1,40 +1,33 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Consensus</title>
+    <title>Consensus -- {{ room_name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
 </head>
 <body>
+    <center>
     <h1 id="room-name">{{ room_name }}</h1>
-    <input id="confusion-button" type="button" value="I'm confused.">
+    <button id="confusion-button">I'm confused.</button>
+    </center>
 
     <script>
-        const roomName = document.getElementById('room-name').textContent;
+        const roomName = document.getElementById("room-name").textContent;
         let protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
         const socket = new WebSocket(
-            protocol
-            + window.location.host
-            + '/ws/student/'
-            + roomName
-            + '/'
+            protocol + window.location.host
+            + "/ws/teacher/" + roomName + "/"
         );
 
-        socket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            console.log(data.message);
-        };
-
         socket.onclose = function(e) {
-            console.error('Socket closed unexpectedly');
+            console.error("Socket closed unexpectedly");
         };
 
         const CONFUSED = "I'm confused.";
         const NOTCONFUSED = "I'm no longer confused.";
-        document.querySelector('#confusion-button').onclick = function(e) {
-            const message = document.querySelector("#confusion-button").value;
-            socket.send(JSON.stringify({"message":  message}));
-            document.querySelector("#confusion-button").value = (
-                message === CONFUSED ? NOTCONFUSED : CONFUSED
-            );
+        const confusionButton = document.getElementById("confusion-button");
+        confusionButton.onclick = function(e) {
+            socket.send(JSON.stringify({"message":  confusionButton.innerText}));
+            confusionButton.innerText = (message === CONFUSED ? NOTCONFUSED : CONFUSED);
         };
     </script>
 </body>
