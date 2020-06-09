@@ -18,6 +18,13 @@
             + "/ws/student/" + roomName + "/"
         );
 
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data["message"] === "end class") {
+                window.location.pathname = '/';
+            }
+        };
+
         socket.onclose = function(e) {
             console.error("Socket closed unexpectedly");
         };
