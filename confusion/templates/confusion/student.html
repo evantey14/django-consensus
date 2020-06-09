@@ -20,7 +20,7 @@
 
         socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            if (data["message"] === "end class") {
+            if (data["message"] === "close room") {
                 window.location.pathname = '/';
             }
         };

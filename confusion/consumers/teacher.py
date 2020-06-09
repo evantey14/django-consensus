@@ -2,7 +2,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
-from confusion.constants import END_CLASS
+from confusion.constants import CLOSE_ROOM
 from confusion.models import Room
 
 class TeacherConsumer(WebsocketConsumer):
@@ -21,9 +21,9 @@ class TeacherConsumer(WebsocketConsumer):
     def receive(self, text_data):
         print(text_data)
         message = json.loads(text_data)['message']
-        if (message == END_CLASS):
-            async_to_sync(self.channel_layer.group_send)(self.teacher_group, {'type': 'end_class'})
-            async_to_sync(self.channel_layer.group_send)(self.student_group, {'type': 'end_class'})
+        if (message == CLOSE_ROOM):
+            async_to_sync(self.channel_layer.group_send)(self.teacher_group, {'type': 'close_room'})
+            async_to_sync(self.channel_layer.group_send)(self.student_group, {'type': 'close_room'})
             Room.objects.get(name=self.room_name).delete()
 
     def disconnect(self, close_code):
@@ -39,5 +39,5 @@ class TeacherConsumer(WebsocketConsumer):
         if room is not None:
             self.send(text_data=json.dumps({'total_students': room.total_students}))
 
-    def end_class(self, event=None):
-        self.send(text_data=json.dumps({'message': END_CLASS}))
+    def close_room(self, event=None):
+        self.send(text_data=json.dumps({'message': CLOSE_ROOM}))

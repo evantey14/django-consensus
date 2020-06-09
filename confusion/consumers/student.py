@@ -3,7 +3,7 @@ from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer
 
-from confusion.constants import CONFUSED, END_CLASS, NOT_CONFUSED
+from confusion.constants import CLOSE_ROOM, CONFUSED, NOT_CONFUSED
 from confusion.models import Room
 
 class StudentConsumer(WebsocketConsumer):
@@ -47,5 +47,5 @@ class StudentConsumer(WebsocketConsumer):
             )
             async_to_sync(self.channel_layer.group_discard)(self.student_group, self.channel_name)
 
-    def end_class(self, event=None):
-        self.send(text_data=json.dumps({'message': END_CLASS}))
+    def close_room(self, event=None):
+        self.send(text_data=json.dumps({'message': CLOSE_ROOM}))

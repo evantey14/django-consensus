@@ -9,7 +9,7 @@
     <h1 id="room-name">{{ room_name }}</h1>
     <h2># of total students: <span id="total-students">0</span></h2>
     <h2># of confused students: <span id="confused-students">0</span></h2>
-    <button id="end-class">End class</button>
+    <button id="close-room">Close room</button>
     </center>
 
     <script>
@@ -28,13 +28,13 @@
             } else if (data["total_students"] !== undefined) {
                 const total_students = data["total_students"];
                 document.getElementById("total-students").textContent = total_students;
-            } else if (data["message"] === "end class") {
+            } else if (data["message"] === "close room") {
                 window.location.pathname = '/';
             }
         };
 
-        document.getElementById("end-class").onclick = function(e) {
-            socket.send(JSON.stringify({"message": "end class"}));
+        document.getElementById("close-room").onclick = function(e) {
+            socket.send(JSON.stringify({"message": "close room"}));
         };
 
         socket.onclose = function(e) {
