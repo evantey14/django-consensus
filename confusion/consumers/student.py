@@ -37,7 +37,7 @@ class StudentConsumer(WebsocketConsumer):
         )
 
     def disconnect(self, close_code):
-        room = Room.objects.filter(name=self.room_name).first()
+        room = Room.objects.get_or_none(name=self.room_name)
         if room is not None:
             room.total_students -= 1
             room.save()

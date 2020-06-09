@@ -30,12 +30,12 @@ class TeacherConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(self.teacher_group, self.channel_name)
 
     def update_confused_students(self, event=None):
-        room = Room.objects.filter(name=self.room_name).first()
+        room = Room.objects.get_or_none(name=self.room_name)
         if room is not None:
             self.send(text_data=json.dumps({'confused_students': room.confused_students}))
 
     def update_total_students(self, event=None):
-        room = Room.objects.filter(name=self.room_name).first()
+        room = Room.objects.get_or_none(name=self.room_name)
         if room is not None:
             self.send(text_data=json.dumps({'total_students': room.total_students}))
 
