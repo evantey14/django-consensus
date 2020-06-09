@@ -12,5 +12,21 @@ class Room(models.Model):
     total_students = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     objects = RoomManager()
 
+    def increment_confused(self):
+        self.confused_students += 1
+        self.save()
+
+    def decrement_confused(self):
+        self.confused_students -= 1
+        self.save()
+
+    def increment_total(self):
+        self.total_students += 1
+        self.save()
+
+    def decrement_total(self):
+        self.total_students -= 1
+        self.save()
+
     def __str__(self):
         return self.name
