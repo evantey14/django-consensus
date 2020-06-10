@@ -4,12 +4,11 @@ from confusion.models import Room
 
 class StudentConsumer(BaseConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.student_group = 'student.%s' % self.room_name
-        self.teacher_group = 'teacher.%s' % self.room_name
+        self.student_group = self.scope['url_route']['kwargs']['student_slug']
         self.is_confused = False
 
-        room, _ = Room.objects.get_or_create(name=self.room_name)
+        room = Room.objects.get(student_slug=self.student_group)
+        self.teacher_group = room.teacher_slug
         room.increment_total()
         self.group_send(self.teacher_group, {'type': 'update_total_students'})
 
@@ -19,7 +18,7 @@ class StudentConsumer(BaseConsumer):
     def receive_json(self, content):
         print(content)
         message = content['message']
-        room = Room.objects.get(name=self.room_name)
+        room = Room.objects.get(student_slug=self.student_group)
         if message == CONFUSED:
             room.increment_confused()
             self.is_confused = True
@@ -30,7 +29,7 @@ class StudentConsumer(BaseConsumer):
         self.group_send(self.teacher_group, {'type': 'update_confused_students'})
 
     def disconnect(self, close_code):
-        room = Room.objects.get_or_none(name=self.room_name)
+        room = Room.objects.get_or_none(student_slug=self.student_group)
         if room is not None:
             if self.is_confused:
                 room.decrement_confused()

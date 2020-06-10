@@ -4,40 +4,42 @@
     <meta charset="utf-8"/>
     <title>Consensus</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <center>
-    <h1>Enter new room name</h1>
+    <h1>Enter room name</h1>
     <input id="room-name-input" type="text"><br>
-    <h2>Student link: <a id="student-link" href=""></a></h2>
-    <h2>Teacher link: <a id="teacher-link" href=""></a></h2>
+    <button id="create-room">Create room</button>
+    <h2 id="response"></h2>
     </center>
 
     <script>
-        const updateLinks = function(roomName) {
-            const studentLink = document.getElementById("student-link");
-            const teacherLink = document.getElementById("teacher-link");
-            if (roomName.length > 0) {
-                studentLink.href = "/student/" + roomName;
-                studentLink.innerText = window.location.host + "/student/" + roomName + "/";
-                teacherLink.href = "/teacher/" + roomName;
-                teacherLink.innerText = window.location.host + "/teacher/" + roomName + "/";
+        // Set csrf tokens settings so axios can work with django
+        axios.defaults.xsrfCookieName = 'csrftoken'
+        axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+
+        document.getElementById("create-room").onclick = async function(e) {
+            const response = await axios.post("/create-room", {
+                "name": document.getElementById("room-name-input").value,
+            });
+
+            let responseElement = document.getElementById("response");
+            if ("error" in response.data) {
+                responseElement.innerText = response.data["error"];
             } else {
-                studentLink.href = "/";
-                studentLink.innerText = window.location.host + "/student/";
-                teacherLink.href = "/";
-                teacherLink.innerText = window.location.host + "/teacher/";
+                const anchor = (href, text) => `<a href="${href}">${text}</a>`
+                const host = window.location.host;
+                const studentHref = `/student/${response.data["student_slug"]}/`;
+                const teacherHref = `/teacher/${response.data["teacher_slug"]}/`;
+
+                const nameHTML = `Created new room: ${response.data["name"]}<br>`;
+                const studentHTML = `Student link: ${anchor(studentHref, host + studentHref)}<br>`;
+                const teacherHTML = `Teacher link: ${anchor(teacherHref, host + teacherHref)}<br>`;
+
+                responseElement.innerHTML =  nameHTML + studentHTML + teacherHTML;
             }
         }
-
-        const input = document.getElementById("room-name-input");
-        updateLinks(input.value);
-        input.focus();
-
-        input.onkeyup = function(e) {
-            const roomName = document.getElementById("room-name-input").value;
-            updateLinks(roomName);
-        };
     </script>
 </body>
 </html>

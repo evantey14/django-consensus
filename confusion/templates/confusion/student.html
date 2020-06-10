@@ -11,11 +11,11 @@
     </center>
 
     <script>
-        const roomName = document.getElementById("room-name").textContent;
+        const slug = location.pathname.split("/").filter(s => s.length > 0)[1];
         let protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
         const socket = new WebSocket(
             protocol + window.location.host
-            + "/ws/student/" + roomName + "/"
+            + "/ws/student/" + slug + "/"
         );
 
         socket.onmessage = function(e) {

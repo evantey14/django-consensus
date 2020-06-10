@@ -4,9 +4,10 @@ from confusion.models import Room
 
 class TeacherConsumer(BaseConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.teacher_group = 'teacher.%s' % self.room_name
-        self.student_group = 'student.%s' % self.room_name
+        self.teacher_group = self.scope['url_route']['kwargs']['teacher_slug']
+
+        room = Room.objects.get(teacher_slug=self.teacher_group)
+        self.student_group = room.student_slug
 
         self.group_add(self.teacher_group, self.channel_name)
         self.accept()
@@ -20,18 +21,18 @@ class TeacherConsumer(BaseConsumer):
         if (message == CLOSE_ROOM):
             self.group_send(self.teacher_group, {'type': 'close_room'})
             self.group_send(self.student_group, {'type': 'close_room'})
-            Room.objects.get(name=self.room_name).delete()
+            Room.objects.get(teacher_slug=self.teacher_group).delete()
 
     def disconnect(self, close_code):
         self.group_discard(self.teacher_group, self.channel_name)
 
     def update_confused_students(self, event=None):
-        room = Room.objects.get_or_none(name=self.room_name)
+        room = Room.objects.get_or_none(teacher_slug=self.teacher_group)
         if room is not None:
             self.send_json({'confused_students': room.confused_students})
 
     def update_total_students(self, event=None):
-        room = Room.objects.get_or_none(name=self.room_name)
+        room = Room.objects.get_or_none(teacher_slug=self.teacher_group)
         if room is not None:
             self.send_json({'total_students': room.total_students})
 
