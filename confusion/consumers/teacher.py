@@ -1,6 +1,6 @@
 from confusion.consumers.base import BaseConsumer
 from confusion.constants import CLOSE_ROOM
-from confusion.models import Room
+from confusion.models import AttendanceRecord, Room
 
 class TeacherConsumer(BaseConsumer):
     def connect(self):
@@ -12,11 +12,9 @@ class TeacherConsumer(BaseConsumer):
         self.group_add(self.teacher_group, self.channel_name)
         self.accept()
 
-        self.update_confused_students()
-        self.update_total_students()
+        self.initialize_plots()
 
     def receive_json(self, content):
-        print(content)
         message = content['message']
         if (message == CLOSE_ROOM):
             self.group_send(self.teacher_group, {'type': 'close_room'})
@@ -26,15 +24,23 @@ class TeacherConsumer(BaseConsumer):
     def disconnect(self, close_code):
         self.group_discard(self.teacher_group, self.channel_name)
 
-    def update_confused_students(self, event=None):
-        room = Room.objects.get_or_none(teacher_slug=self.teacher_group)
-        if room is not None:
-            self.send_json({'confused_students': room.confused_students})
+    def initialize_plots(self):
+        room = Room.objects.get(teacher_slug=self.teacher_group)
+        self.send_json({'type': 'initialize_plots', 'history': room.get_history()})
 
-    def update_total_students(self, event=None):
-        room = Room.objects.get_or_none(teacher_slug=self.teacher_group)
-        if room is not None:
-            self.send_json({'total_students': room.total_students})
+    def update_confused_students(self, event):
+        self.send_json({
+            'type': 'update_confused_students',
+            'timestamp': event.get('timestamp'),
+            'action': event.get('action'),
+        })
+
+    def update_total_students(self, event):
+        self.send_json({
+            'type': 'update_total_students',
+            'timestamp': event.get('timestamp'),
+            'action': event.get('action')
+        })
 
     def close_room(self, event=None):
-        self.send_json({'message': CLOSE_ROOM})
+        self.send_json({'type': CLOSE_ROOM})

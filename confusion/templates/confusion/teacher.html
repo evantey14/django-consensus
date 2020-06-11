@@ -1,14 +1,15 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Consensus -- {{ room_name }}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
+    <title>Consensus -- {{ room_name }}</title> <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <center>
     <h1 id="room-name">{{ room_name }}</h1>
     <h2># of total students: <span id="total-students">0</span></h2>
     <h2># of confused students: <span id="confused-students">0</span></h2>
+    <div id="graph"></div>
     <button id="close-room">Close room</button>
     </center>
 
@@ -20,18 +21,75 @@
             + "/ws/teacher/" + slug + "/"
         );
 
+        let total_students = 0;
+        let confused_students = 0;
         socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            if (data["confused_students"] !== undefined) {
-                const confused_students = data["confused_students"];
-                document.getElementById("confused-students").textContent = confused_students;
-            } else if (data["total_students"] !== undefined) {
-                const total_students = data["total_students"];
-                document.getElementById("total-students").textContent = total_students;
-            } else if (data["message"] === "close room") {
-                window.location.pathname = '/';
+            switch(data["type"]) {
+                case "initialize_plots":
+                    initialize_plots(data["history"]);
+                    break;
+                case "update_confused_students":
+                    update_confused_students(data["timestamp"], data["action"]);
+                    break;
+                case "update_total_students":
+                    update_total_students(data["timestamp"], data["action"]);
+                    break;
+                case "close room":
+                    window.location.pathname = "/";
             }
         };
+
+        function initialize_plots(history) {
+            const attendanceTimes = history["attendance_times"].map(s => new Date(s));
+            const attendance = history["attendance"];
+            total_students = attendance[attendance.length - 1] || 0;
+            document.getElementById("total-students").textContent = total_students;
+
+            const confusionTimes = history["confusion_times"].map(s => new Date(s));
+            const confusion = history["confusion"];
+            confused_students = confusion[confusion.length - 1] || 0;
+            document.getElementById("confused-students").textContent = confused_students;
+
+            const earliestTime = getEarliestTime([...attendanceTimes, ...confusionTimes]);
+            const attendancePlot = {
+                x: [earliestTime, ...attendanceTimes],
+                y: [0, ...attendance],
+                name: "# of total students",
+            };
+            const confusionPlot = {
+                x: [earliestTime, ...confusionTimes],
+                y: [0, ...confusion],
+                name: "# of confused students",
+            };
+
+            Plotly.plot("graph", [attendancePlot, confusionPlot]);
+        }
+
+        function getEarliestTime(timesArray) {
+            return timesArray.length === 0 ? new Date() : timesArray.sort()[0];
+        }
+
+        function update_total_students(timestamp, action){
+            total_students += action;
+            update_plot(new Date(timestamp), total_students, 0);
+            document.getElementById("total-students").textContent = total_students;
+        }
+
+        function update_confused_students(timestamp, action){
+            confused_students += action;
+            update_plot(new Date(timestamp), confused_students, 1);
+            document.getElementById("confused-students").textContent = confused_students;
+        }
+
+        function update_plot(x, y, plotIndex) {
+            Plotly.extendTraces("graph", {x: [[x]], y: [[y]]}, [plotIndex])
+        }
+
+        const autoUpdate = setInterval(function() {
+            update_plot(new Date(), total_students, 0);
+            update_plot(new Date(), confused_students, 1);
+        }, 1000);
 
         document.getElementById("close-room").onclick = function(e) {
             socket.send(JSON.stringify({"message": "close room"}));

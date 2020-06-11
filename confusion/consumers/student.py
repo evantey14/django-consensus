@@ -1,6 +1,6 @@
 from confusion.consumers.base import BaseConsumer
 from confusion.constants import CLOSE_ROOM, CONFUSED, NOT_CONFUSED
-from confusion.models import Room
+from confusion.models import AttendanceRecord, Room
 
 class StudentConsumer(BaseConsumer):
     def connect(self):
@@ -9,35 +9,40 @@ class StudentConsumer(BaseConsumer):
 
         room = Room.objects.get(student_slug=self.student_group)
         self.teacher_group = room.teacher_slug
-        room.increment_total()
-        self.group_send(self.teacher_group, {'type': 'update_total_students'})
+
+        attendance_record = room.add_student()
+        self.send_update_to_teachers('update_total_students', attendance_record)
 
         self.group_add(self.student_group, self.channel_name)
         self.accept()
 
     def receive_json(self, content):
-        print(content)
         message = content['message']
         room = Room.objects.get(student_slug=self.student_group)
         if message == CONFUSED:
-            room.increment_confused()
+            confusion_record = room.add_confusion()
             self.is_confused = True
         elif message == NOT_CONFUSED:
-            room.decrement_confused()
+            confusion_record = room.remove_confusion()
             self.is_confused = False
-
-        self.group_send(self.teacher_group, {'type': 'update_confused_students'})
+        self.send_update_to_teachers('update_confused_students', confusion_record)
 
     def disconnect(self, close_code):
         room = Room.objects.get_or_none(student_slug=self.student_group)
         if room is not None:
             if self.is_confused:
-                room.decrement_confused()
-                self.group_send(self.teacher_group, {'type': 'update_confused_students'})
-            room.decrement_total()
-            self.group_send(self.teacher_group, {'type': 'update_total_students'})
-
+                confusion_record = room.remove_confusion()
+                self.send_update_to_teachers('update_confused_students', confusion_record)
+            attendance_record = room.remove_student()
+            self.send_update_to_teachers('update_total_students', attendance_record)
         self.group_discard(self.student_group, self.channel_name)
+
+    def send_update_to_teachers(self, update_type, record):
+        self.group_send(self.teacher_group, {
+            'type': update_type,
+            'timestamp': record.timestamp.__str__(),
+            'action': record.action,
+        })
 
     def close_room(self, event=None):
         self.send_json({'message': CLOSE_ROOM})
