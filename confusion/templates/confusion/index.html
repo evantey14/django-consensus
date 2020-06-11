@@ -6,14 +6,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
-<body>
-    <center>
+<body style="height: 100%; display: flex; flex-direction: column;">
+    <center style="flex: 1 0 auto;">
     <h1>Enter room name</h1>
     {% csrf_token %}
     <input id="room-name-input" type="text"><br>
     <button id="create-room">Create room</button>
     <h2 id="response"></h2>
     </center>
+    <footer style="flex-shrink: 0; text-align: center">
+        Made by @evantey14 with inspiration from @jynnie, @kelvin-lu, @mlarash, and Hoang Nguyen.
+    </footer>
 
     <script>
         // Set csrf tokens settings so axios can work with django
