@@ -9,6 +9,7 @@
 <body>
     <center>
     <h1>Enter room name</h1>
+    {% csrf_token %}
     <input id="room-name-input" type="text"><br>
     <button id="create-room">Create room</button>
     <h2 id="response"></h2>
