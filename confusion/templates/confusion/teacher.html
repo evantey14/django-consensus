@@ -29,11 +29,12 @@
                 case "initialize_plots":
                     initialize_plots(data["history"]);
                     break;
+                // When updating, use a new date since client and server times can disagree;
                 case "update_confused_students":
-                    update_confused_students(data["timestamp"], data["action"]);
+                    update_confused_students(new Date(), data["action"]);
                     break;
                 case "update_total_students":
-                    update_total_students(data["timestamp"], data["action"]);
+                    update_total_students(new Date(), data["action"]);
                     break;
                 case "close room":
                     window.location.pathname = "/";
